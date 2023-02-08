@@ -1,0 +1,30 @@
+* {
+	box-sizing: border-box;
+	padding: 0;
+	margin: 0;
+}
+
+html,
+body {
+	height: 100vh;
+	max-width: 100vw;
+	overflow-x: hidden;
+}
+
+body {
+	background-image: url('../assets/images/clay-banks-fEVaiLwWvlU-unsplash.jpg');
+	background-size: cover;
+	background-position: center;
+	/* background-image: linear-gradient(to right, rgb(38, 38, 38), rgb(13, 13, 13)); */
+}
+
+a {
+	color: inherit;
+	text-decoration: none;
+}
+
+@media (prefers-color-scheme: dark) {
+	html {
+		color-scheme: dark;
+	}
+}
