@@ -1,11 +1,12 @@
 import Head from 'next/head';
-import { Box } from '@mantine/core';
+import { Box, Burger, useMantineTheme, Transition, Text, Button } from '@mantine/core';
 import { useMediaQuery } from '@mantine/hooks';
 import { useState } from 'react';
-import { useSession } from 'next-auth/react';
+import { signOut, useSession } from 'next-auth/react';
 import Header from '@/components/Landing/Header';
 import UploadModal from '@/components/Modals/UploadModal/UploadModal';
 import ImageComp from '@/components/Landing/ImageComp';
+import Navbar from '@/components/Navbar/Navbar';
 
 export default function Home() {
 	const desktop = useMediaQuery('(min-width:900px)');
@@ -37,8 +38,11 @@ export default function Home() {
 						margin: '0 auto',
 						maxWidth: '1200px',
 						display: 'flex',
+						flexDirection: 'column',
+						position: 'relative',
 					}}
 				>
+					<Navbar />
 					<Box
 						sx={{
 							display: 'grid',
