@@ -1,104 +1,19 @@
 import Head from 'next/head';
-import { Box, Button, Image, Text, Modal, Transition, ActionIcon, Loader } from '@mantine/core';
+import { Box } from '@mantine/core';
 import { useMediaQuery } from '@mantine/hooks';
 import { useState } from 'react';
-import { Dropzone, IMAGE_MIME_TYPE } from '@mantine/dropzone';
-import image3d from '@/assets/images/picture-dynamic-premium.png';
-import backgroundImage from '@/assets/images/maximalfocus-VT4rx775FT4-unsplash.jpg';
-import Icon from '@/components/Icon';
-import roundTo from '@/utils/roundTo';
-
-interface imageFile {
-	file: File;
-	loading: boolean;
-	uploaded: boolean;
-	error?: string;
-	url?: string;
-}
-
-interface cfResult {
-	id: string;
-	filename: string;
-	uploaded: Date;
-	requiredSignedURLs: boolean;
-	variants: string[];
-}
+import { useSession } from 'next-auth/react';
+import Header from '@/components/Landing/Header';
+import UploadModal from '@/components/Modals/UploadModal/UploadModal';
+import ImageComp from '@/components/Landing/ImageComp';
 
 export default function Home() {
 	const desktop = useMediaQuery('(min-width:900px)');
+	const { data: session, status } = useSession();
 
 	const [isOpen, setIsOpen] = useState(false);
-	const [isUploading, setIsUploading] = useState(false);
-	const [hasUploaded, setHasUploaded] = useState(false);
-	const [images, setImages] = useState<imageFile[]>([]);
 
-	const updateImageState = (image: imageFile, state: string, value: any) => {
-		const tempImages = [...images];
-		const tempImage = tempImages.find((item) => item === image);
-
-		if (tempImage) {
-			if (state === 'loading') tempImage.loading = value;
-			if (state === 'uploaded') tempImage.uploaded = value;
-			if (state === 'error') tempImage.error = value;
-			if (state === 'url') tempImage.url = value;
-		}
-
-		setImages(tempImages);
-	};
-
-	const dropImage = (files: File[]) => {
-		const tempArr = [];
-
-		for (const file of files) {
-			tempArr.push({ file, loading: false, uploaded: false });
-		}
-
-		setImages([...images, ...tempArr]);
-	};
-
-	const removeFile = (name: string) => {
-		setImages(images.filter((image) => image.file.name !== name));
-	};
-
-	const uploadFiles = async () => {
-		if (images.length > 0 && !hasUploaded) {
-			setIsUploading(true);
-
-			for (const image of images) {
-				updateImageState(image, 'loading', true);
-
-				const body = new FormData();
-
-				body.append('image', image.file, image.file.name);
-
-				const res = await fetch('/api/images/upload', {
-					method: 'POST',
-					body,
-				});
-
-				const { result }: { result: cfResult } = await res.json();
-
-				if (res.status === 201) {
-					updateImageState(image, 'loading', false);
-					updateImageState(image, 'uploaded', true);
-					updateImageState(image, 'url', result.variants[0]);
-				} else {
-					updateImageState(image, 'loading', false);
-					updateImageState(image, 'error', res.statusText);
-				}
-			}
-
-			setHasUploaded(true);
-			setIsUploading(false);
-		}
-	};
-
-	const closeModal = () => {
-		setImages([]);
-		setHasUploaded(false);
-		setIsUploading(false);
-		setIsOpen(false);
-	};
+	console.log(session, status);
 
 	return (
 		<>
@@ -133,147 +48,11 @@ export default function Home() {
 							width: '100%',
 						}}
 					>
-						<Box
-							sx={{
-								display: 'flex',
-								alignItems: 'center',
-								justifyContent: 'center',
-								flexDirection: 'column',
-							}}
-						>
-							<Image src={image3d.src} alt='3d image' width={300} height={300} />
-						</Box>
-						<Box
-							sx={{
-								display: 'flex',
-								alignItems: 'flex-start',
-								justifyContent: 'center',
-								flexDirection: 'column',
-								gap: '1rem',
-							}}
-						>
-							<Text component='h1' sx={{ fontSize: '1.5rem' }}>
-								Upload images and easily share them
-							</Text>
-							<Text component='p'>Continue with Discord to get access to the uploader</Text>
-							<Box>
-								<Button onClick={() => setIsOpen(true)}>Upload Images</Button>
-							</Box>
-						</Box>
+						<ImageComp />
+						<Header setIsOpen={setIsOpen} />
 					</Box>
-					<Modal
-						styles={(theme) => ({
-							modal: {
-								color: '#fff',
-								backgroundColor: theme.colors.dark[6],
-							},
-						})}
-						centered
-						opened={isOpen}
-						onClose={closeModal}
-						title='Upload Images'
-					>
-						<Dropzone
-							accept={IMAGE_MIME_TYPE}
-							maxSize={5242880}
-							maxFiles={5}
-							color='dark'
-							onDrop={dropImage}
-							onReject={(files) => console.log(files)}
-						>
-							<Box
-								sx={{
-									display: 'flex',
-									alignItems: 'center',
-									justifyContent: 'center',
-									flexDirection: 'column',
-									gap: '1rem',
-									height: '10rem',
-								}}
-							>
-								<Dropzone.Accept>
-									<Icon size='36' icon='photo-check' />
-								</Dropzone.Accept>
-								<Dropzone.Reject>
-									<Icon size='36' icon='photo-x' />
-								</Dropzone.Reject>
-								<Dropzone.Idle>
-									<Icon size='36' icon='photo-up' />
-								</Dropzone.Idle>
-								<Box
-									sx={{
-										display: 'flex',
-										flexDirection: 'column',
-										alignItems: 'center',
-										gap: '0.25rem',
-									}}
-								>
-									<Text size='xl'>Drag images here or click to select files</Text>
-									<Text size='xs' inline>
-										Attach as many files as you like, each file should not exceed 5MB
-									</Text>
-								</Box>
-							</Box>
-						</Dropzone>
-						<Transition mounted={images.length > 0} transition='slide-down' duration={400} timingFunction='ease'>
-							{(styles) => (
-								<Box
-									style={styles}
-									sx={{
-										display: 'flex',
-										flexDirection: 'column',
-										gap: '1rem',
-										marginTop: '1rem',
-									}}
-								>
-									{images.map((image, index) => (
-										<Box
-											key={index}
-											sx={(theme) => ({
-												padding: '0.5rem 1rem',
-												display: 'flex',
-												alignItems: 'center',
-												justifyContent: 'space-between',
-												backgroundColor: theme.colors.dark[5],
-												borderRadius: '0.25rem',
-											})}
-										>
-											<Box>
-												{image.url ? (
-													<Text color='blue' component='a' href={image.url}>
-														{image.file.name}
-													</Text>
-												) : null}
-												{!image.url ? <Text>{image.file.name}</Text> : null}
-												<Text size='xs'>{roundTo(image.file.size / 1024 / 1024)} MB</Text>
-											</Box>
-											<Box
-												sx={{
-													display: 'flex',
-													alignItems: 'center',
-												}}
-											>
-												{image.loading ? <Loader size='sm' /> : null}
-												{!image.loading && !image.uploaded ? (
-													<ActionIcon onClick={() => removeFile(image.file.name)} variant='light' color='red'>
-														<Icon icon='trash' />
-													</ActionIcon>
-												) : null}
-												{!image.loading && image.uploaded ? (
-													<ActionIcon variant='light' color='green'>
-														<Icon icon='check' />
-													</ActionIcon>
-												) : null}
-											</Box>
-										</Box>
-									))}
-									<Button disabled={isUploading} onClick={uploadFiles}>
-										Upload
-									</Button>
-								</Box>
-							)}
-						</Transition>
-					</Modal>
+
+					<UploadModal isOpen={isOpen} setIsOpen={setIsOpen} />
 					<Box component='footer'></Box>
 				</Box>
 			</Box>
