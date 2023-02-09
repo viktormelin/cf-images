@@ -49,6 +49,7 @@ model User {
   roles         String[]
   accounts      Account[]
   sessions      Session[]
+  images        Images[]
 }
 
 model VerificationToken {
@@ -57,4 +58,15 @@ model VerificationToken {
   expires    DateTime
 
   @@unique([identifier, token])
+}
+
+model Images {
+  id          String    @id @unique
+  userId      String 
+  createdAt   DateTime  @default(now())
+  imageURL    String 
+  imageName   String
+  imageSize   Int       @default(0)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
