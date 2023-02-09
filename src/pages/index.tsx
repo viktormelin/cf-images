@@ -1,8 +1,8 @@
 import Head from 'next/head';
-import { Box, Burger, useMantineTheme, Transition, Text, Button } from '@mantine/core';
+import { Box } from '@mantine/core';
 import { useMediaQuery } from '@mantine/hooks';
 import { useState } from 'react';
-import { signOut, useSession } from 'next-auth/react';
+import { useSession } from 'next-auth/react';
 import Header from '@/components/Landing/Header';
 import UploadModal from '@/components/Modals/UploadModal/UploadModal';
 import ImageComp from '@/components/Landing/ImageComp';
@@ -10,11 +10,12 @@ import Navbar from '@/components/Navbar/Navbar';
 
 export default function Home() {
 	const desktop = useMediaQuery('(min-width:900px)');
-	const { data: session, status } = useSession();
 
 	const [isOpen, setIsOpen] = useState(false);
 
-	console.log(session, status);
+	const toggleUploadModal = () => {
+		setIsOpen(true);
+	};
 
 	return (
 		<>
@@ -42,7 +43,7 @@ export default function Home() {
 						position: 'relative',
 					}}
 				>
-					<Navbar />
+					<Navbar toggleUploadModal={toggleUploadModal} />
 					<Box
 						sx={{
 							display: 'grid',
