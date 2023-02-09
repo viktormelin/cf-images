@@ -1,10 +1,13 @@
 import type { CfResponse } from '@/types/typings';
+import { PrismaClient } from '@prisma/client';
 import Cors from 'cors';
 import type { File } from 'formidable';
 import formidable from 'formidable';
 import { readFileSync, rm, rmSync, unlinkSync, writeFileSync } from 'fs';
 import type { NextApiRequest, NextApiResponse } from 'next';
 // import a from '../../../../../public/temp'
+
+const prisma = new PrismaClient();
 
 const cors = Cors({
 	methods: ['POST', 'GET', 'HEAD'],
@@ -65,8 +68,52 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
 	await runMiddleware(req, res, cors);
 	const { key } = req.query;
 
-	if (key) {
+	const sessionToken = req.cookies['next-auth.session-token'];
+
+	if (key || sessionToken) {
 		// Check for auth
+		if (sessionToken) {
+			// User is logged in
+			const user = await prisma.session.findUnique({ where: { sessionToken } });
+			if (user) {
+				const form = new formidable.IncomingForm();
+				form.parse(req, async (err, _fields, files) => {
+					if (err) {
+						res.status(400).send(err);
+					}
+
+					const imageFile = files.image as File;
+					const response = await uploadToServer(imageFile);
+
+					if (response) {
+						if (response.success === true) {
+							const dbImage = await prisma.images.create({
+								data: {
+									id: response.result.id,
+									userId: user.id,
+									imageURL: response.result.variants[0],
+									imageName: response.result.filename,
+									imageSize: imageFile.size / 1024 / 1024,
+								},
+							});
+
+							if (dbImage) {
+								res.status(201).json(dbImage);
+								res.end();
+							} else {
+								res.status(500).send('Failed to create image on server');
+							}
+						} else {
+							res.status(500).json(response.errors);
+						}
+					}
+
+					res.status(500).end();
+				});
+			} else {
+				res.status(400).send('No user found');
+			}
+		}
 	} else {
 		// No token provided, continue as "free user"
 		const form = new formidable.IncomingForm();
