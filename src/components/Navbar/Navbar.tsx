@@ -2,11 +2,12 @@ import { Box, Burger, useMantineTheme, Transition, Button } from '@mantine/core'
 import { signOut, useSession } from 'next-auth/react';
 import { useState } from 'react';
 
-const Navbar = () => {
+const Navbar: React.FC<{ toggleUploadModal: () => void }> = ({ toggleUploadModal }) => {
 	const theme = useMantineTheme();
 	const { data: session, status } = useSession();
 
 	const [navOpen, setNavOpen] = useState(false);
+
 	return (
 		<Transition mounted={status === 'authenticated'} transition='fade' duration={400} timingFunction='ease'>
 			{(styles) => (
@@ -47,9 +48,15 @@ const Navbar = () => {
 									gap: '1rem',
 								}}
 							>
-								<Button variant='subtle'>Upload</Button>
-								<Button variant='subtle'>My Images</Button>
-								<Button variant='subtle'>Profile</Button>
+								<Button variant='subtle' onClick={toggleUploadModal}>
+									Upload
+								</Button>
+								<Button variant='subtle' component='a' href='/images'>
+									My Images
+								</Button>
+								<Button variant='subtle' component='a' href='/profile'>
+									Profile
+								</Button>
 								<Button variant='subtle' onClick={() => signOut()}>
 									Logout
 								</Button>
