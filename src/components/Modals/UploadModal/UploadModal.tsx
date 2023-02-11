@@ -3,7 +3,9 @@ import { Box, Button, Text, Modal, Transition, ActionIcon, Loader } from '@manti
 import Icon from '@/components/Icon';
 import roundTo from '@/utils/roundTo';
 import { useState } from 'react';
-import type { CfResponse, CfResult, imageFile } from '@/types/typings';
+import type { imageFile } from '@/types/typings';
+import type { Images } from '@prisma/client';
+import generateURL from '@/utils/generateURL';
 
 const UploadModal: React.FC<{ isOpen: boolean; setIsOpen: (state: boolean) => void }> = ({ isOpen, setIsOpen }) => {
 	const [isUploading, setIsUploading] = useState(false);
@@ -54,12 +56,13 @@ const UploadModal: React.FC<{ isOpen: boolean; setIsOpen: (state: boolean) => vo
 					body,
 				});
 
-				const { result }: { result: CfResult } = (await res.json()) as CfResponse;
+				const { imageId } = (await res.json()) as Images;
+				const updatedURL = generateURL(imageId);
 
 				if (res.status === 201) {
 					updateImageState(image, 'loading', false);
 					updateImageState(image, 'uploaded', true);
-					updateImageState(image, 'url', result.variants[0]);
+					updateImageState(image, 'url', updatedURL);
 				} else {
 					updateImageState(image, 'loading', false);
 					updateImageState(image, 'error', res.statusText);
@@ -158,7 +161,7 @@ const UploadModal: React.FC<{ isOpen: boolean; setIsOpen: (state: boolean) => vo
 							>
 								<Box>
 									{image.url ? (
-										<Text color='blue' component='a' href={image.url}>
+										<Text color='blue' component='a' href={image.url} target='_blank'>
 											{image.file.name}
 										</Text>
 									) : null}
