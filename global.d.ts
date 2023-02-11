@@ -6,5 +6,6 @@ namespace NodeJS {
 		DATABASE_URL: string;
 		CLOUDFLARE_TOKEN: string;
 		CLOUDFLARE_ACCOUNT: string;
+		NEXT_PUBLIC_CLOUDFLARE_DOMAIN: string;
 	}
 }
