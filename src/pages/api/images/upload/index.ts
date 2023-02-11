@@ -1,13 +1,11 @@
 import type { CfResponse } from '@/types/typings';
-import { PrismaClient } from '@prisma/client';
+import roundTo from '@/utils/roundTo';
 import Cors from 'cors';
 import type { File } from 'formidable';
 import formidable from 'formidable';
-import { readFileSync, rm, rmSync, unlinkSync, writeFileSync } from 'fs';
+import { readFileSync, rmSync, unlinkSync, writeFileSync } from 'fs';
 import type { NextApiRequest, NextApiResponse } from 'next';
-// import a from '../../../../../public/temp'
-
-const prisma = new PrismaClient();
+import prisma from '@/lib/prisma';
 
 const cors = Cors({
 	methods: ['POST', 'GET', 'HEAD'],
@@ -79,7 +77,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
 				const form = new formidable.IncomingForm();
 				form.parse(req, async (err, _fields, files) => {
 					if (err) {
-						res.status(400).send(err);
+						res.status(500).send(err);
 					}
 
 					const imageFile = files.image as File;
@@ -89,17 +87,16 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
 						if (response.success === true) {
 							const dbImage = await prisma.images.create({
 								data: {
-									id: response.result.id,
-									userId: user.id,
+									userId: user.userId,
+									imageId: response.result.id,
 									imageURL: response.result.variants[0],
 									imageName: response.result.filename,
-									imageSize: imageFile.size / 1024 / 1024,
+									imageSize: roundTo(imageFile.size / 1024 / 1024),
 								},
 							});
 
 							if (dbImage) {
 								res.status(201).json(dbImage);
-								res.end();
 							} else {
 								res.status(500).send('Failed to create image on server');
 							}
@@ -111,7 +108,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
 					res.status(500).end();
 				});
 			} else {
-				res.status(400).send('No user found');
+				res.status(500).send('Failed to find user from session');
 			}
 		}
 	} else {
