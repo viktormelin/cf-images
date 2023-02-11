@@ -1,7 +1,7 @@
 import NextAuth from 'next-auth';
 import DiscordProvider from 'next-auth/providers/discord';
 import { PrismaAdapter } from '@next-auth/prisma-adapter';
-import prisma from '../../../lib/prisma';
+import prisma from '@/lib/prisma';
 
 interface DiscordUser {
 	id: string;
@@ -40,47 +40,49 @@ export default NextAuth({
 			const verifiedRoleId = '1064965680669135109';
 
 			if (account) {
-				const response = await fetch(
-					`https://discord.com/api/users/@me/guilds/${process.env.DISCORD_GUILD_ID}/member`,
-					{
-						method: 'GET',
-						headers: {
-							Authorization: `Bearer ${account?.access_token}`,
-						},
-					}
-				);
+				const token = account.access_token;
 
-				if (response.status === 200) {
-					const resBody: DiscordRes = await response.json();
-
-					if (resBody.roles.includes(verifiedRoleId)) {
-						const dbUser = await prisma.user.findUnique({
-							where: { id: user.id },
-						});
-
-						if (dbUser) {
-							await prisma.account.update({
-								where: {
-									provider_providerAccountId: {
-										provider: account.provider,
-										providerAccountId: account.providerAccountId,
-									},
-								},
-								data: {
-									access_token: account.access_token,
-									expires_at: account.expires_at,
-									id_token: account.id_token,
-									refresh_token: account.refresh_token,
-									session_state: account.session_state,
-									scope: account.scope,
-								},
-							});
+				if (token) {
+					const response = await fetch(
+						`https://discord.com/api/users/@me/guilds/${process.env.DISCORD_GUILD_ID}/member`,
+						{
+							method: 'GET',
+							headers: {
+								Authorization: `Bearer ${token}`,
+							},
 						}
+					);
 
-						return true;
+					if (response.status === 200) {
+						const resBody = (await response.json()) as DiscordRes;
+
+						if (resBody.roles.includes(verifiedRoleId)) {
+							const dbUser = await prisma.user.findUnique({
+								where: { id: user.id },
+							});
+
+							if (dbUser) {
+								await prisma.account.update({
+									where: {
+										provider_providerAccountId: {
+											provider: account.provider,
+											providerAccountId: account.providerAccountId,
+										},
+									},
+									data: {
+										access_token: account.access_token,
+										expires_at: account.expires_at,
+										id_token: account.id_token,
+										refresh_token: account.refresh_token,
+										session_state: account.session_state,
+										scope: account.scope,
+									},
+								});
+							}
+
+							return true;
+						}
 					}
-
-					return false;
 				}
 			}
 
