@@ -7,6 +7,7 @@ import { readFileSync, rmSync, unlinkSync, writeFileSync } from 'fs';
 import type { NextApiRequest, NextApiResponse } from 'next';
 import prisma from '@/lib/prisma';
 import canUpload from '@/utils/canUpload';
+import generateURL from '@/utils/generateURL';
 
 const cors = Cors({
 	methods: ['POST', 'GET', 'HEAD'],
@@ -128,6 +129,64 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
 				});
 			} else {
 				res.status(500).send('Failed to find user from session');
+			}
+		} else if (key) {
+			const keyUser = await prisma.aPIKey.findUnique({ where: { id: key as string } });
+
+			if (keyUser) {
+				const form = new formidable.IncomingForm();
+				form.parse(req, async (err, _fields, files) => {
+					if (err) {
+						res.status(500).send(err);
+					}
+
+					const imageFile = files.image as File;
+					const imageSize = imageFile ? roundTo(imageFile.size / 1024 / 1024) : 0;
+
+					const user = await prisma.user.findUnique({
+						where: { id: keyUser.userId },
+						include: {
+							images: true,
+						},
+					});
+
+					if (user && !canUpload(user, imageSize)) {
+						res.status(507).send('You do not have enough storage with this account to upload');
+					}
+
+					const response = await uploadToServer(imageFile);
+
+					if (response) {
+						if (response.success === true) {
+							const dbImage = await prisma.images.create({
+								data: {
+									userId: keyUser.userId,
+									imageId: response.result.id,
+									imageURL: response.result.variants[0],
+									imageName: response.result.filename,
+									imageSize,
+								},
+							});
+
+							await prisma.user.update({
+								where: { id: keyUser.userId },
+								data: { bandwidth: { increment: imageSize } },
+							});
+
+							if (dbImage) {
+								res.status(201).send(generateURL(dbImage.imageId));
+							} else {
+								res.status(500).send('Failed to create image on server');
+							}
+						} else {
+							res.status(500).json(response.errors);
+						}
+					}
+
+					res.status(500).end();
+				});
+			} else {
+				res.status(404).send('Could not find key in database');
 			}
 		}
 	} else {
