@@ -88,6 +88,16 @@ export default NextAuth({
 
 			return false;
 		},
+		// eslint-disable-next-line @typescript-eslint/require-await
+		async redirect({ url, baseUrl }) {
+			if (url.startsWith('/')) {
+				return `${baseUrl}${url}`;
+			} else if (new URL(url).origin === baseUrl) {
+				return url;
+			}
+
+			return baseUrl;
+		},
 		// async session({ session, user }) {
 		// 	const account = await prisma.account.findFirst({
 		// 		where: {
