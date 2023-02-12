@@ -25,6 +25,8 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
 			? context.req.cookies['next-auth.session-token']
 			: context.req.cookies['_Secure-next-auth.session-token'];
 
+	console.log(context.req.cookies);
+
 	if (!sessionToken) {
 		return {
 			redirect: {

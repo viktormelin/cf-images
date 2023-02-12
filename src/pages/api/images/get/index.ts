@@ -9,6 +9,8 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
 			? req.cookies['next-auth.session-token']
 			: req.cookies['_Secure-next-auth.session-token'];
 
+	console.log(req.cookies);
+
 	// Check if authenticated
 	if (token || sessionToken) {
 		// Fetch specific image using auth token
