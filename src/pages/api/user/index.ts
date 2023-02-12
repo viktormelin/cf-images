@@ -3,7 +3,10 @@ import prisma from '@/lib/prisma';
 import { getRemaining } from '@/utils/canUpload';
 
 const handler = async (req: NextApiRequest, res: NextApiResponse) => {
-	const sessionToken = req.cookies['next-auth.session-token'];
+	const sessionToken =
+		process.env.NODE_ENV === 'development'
+			? req.cookies['next-auth.session-token']
+			: req.cookies['_Secure-next-auth.session-token'];
 
 	// Check if authenticated
 	if (sessionToken) {

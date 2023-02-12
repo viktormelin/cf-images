@@ -2,7 +2,10 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 import prisma from '@/lib/prisma';
 
 const handler = async (req: NextApiRequest, res: NextApiResponse) => {
-	const sessionToken = req.cookies['next-auth.session-token'];
+	const sessionToken =
+		process.env.NODE_ENV === 'development'
+			? req.cookies['next-auth.session-token']
+			: req.cookies['_Secure-next-auth.session-token'];
 
 	// Check if authenticated
 	if (sessionToken) {

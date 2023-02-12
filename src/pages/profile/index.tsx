@@ -20,7 +20,10 @@ interface LocalResponse {
 }
 
 export const getServerSideProps: GetServerSideProps = async (context) => {
-	const sessionToken = context.req.cookies['next-auth.session-token'];
+	const sessionToken =
+		process.env.NODE_ENV === 'development'
+			? context.req.cookies['next-auth.session-token']
+			: context.req.cookies['_Secure-next-auth.session-token'];
 
 	if (!sessionToken) {
 		return {
