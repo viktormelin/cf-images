@@ -23,9 +23,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
 	const sessionToken =
 		process.env.NODE_ENV === 'development'
 			? context.req.cookies['next-auth.session-token']
-			: context.req.cookies['_Secure-next-auth.session-token'];
-
-	console.log(context.req.cookies);
+			: context.req.cookies['__Secure-next-auth.session-token'];
 
 	if (!sessionToken) {
 		return {

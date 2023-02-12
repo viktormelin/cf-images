@@ -71,7 +71,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
 	const sessionToken =
 		process.env.NODE_ENV === 'development'
 			? req.cookies['next-auth.session-token']
-			: req.cookies['_Secure-next-auth.session-token'];
+			: req.cookies['__Secure-next-auth.session-token'];
 
 	if (key || sessionToken) {
 		// Check for auth
