@@ -44,12 +44,13 @@ model User {
   emailVerified DateTime?
   image         String?
   group         String    @default("base")
-  bandwidth     Int       @default(0)
+  bandwidth     Float       @default(0)
   createdAt     DateTime  @default(now())
   roles         String[]
   accounts      Account[]
   sessions      Session[]
   images        Images[]
+  keys          Key[]
 }
 
 model VerificationToken {
@@ -69,5 +70,13 @@ model Images {
   imageName   String
   imageSize   Float       @default(0)
 
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Key {
+  id          String      @id @default(cuid())
+  key         String
+  userId      String 
+  createdAt   DateTime    @default(now())
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
