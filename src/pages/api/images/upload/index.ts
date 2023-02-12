@@ -6,6 +6,7 @@ import formidable from 'formidable';
 import { readFileSync, rmSync, unlinkSync, writeFileSync } from 'fs';
 import type { NextApiRequest, NextApiResponse } from 'next';
 import prisma from '@/lib/prisma';
+import canUpload from '@/utils/canUpload';
 
 const cors = Cors({
 	methods: ['POST', 'GET', 'HEAD'],
@@ -72,8 +73,8 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
 		// Check for auth
 		if (sessionToken) {
 			// User is logged in
-			const user = await prisma.session.findUnique({ where: { sessionToken } });
-			if (user) {
+			const session = await prisma.session.findUnique({ where: { sessionToken } });
+			if (session) {
 				const form = new formidable.IncomingForm();
 				form.parse(req, async (err, _fields, files) => {
 					if (err) {
@@ -81,18 +82,36 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
 					}
 
 					const imageFile = files.image as File;
+					const imageSize = roundTo(imageFile.size / 1024 / 1024);
+
+					const user = await prisma.user.findUnique({
+						where: { id: session.userId },
+						include: {
+							images: true,
+						},
+					});
+
+					if (user && !canUpload(user, imageSize)) {
+						res.status(507).send('You do not have enough storage with this account to upload');
+					}
+
 					const response = await uploadToServer(imageFile);
 
 					if (response) {
 						if (response.success === true) {
 							const dbImage = await prisma.images.create({
 								data: {
-									userId: user.userId,
+									userId: session.userId,
 									imageId: response.result.id,
 									imageURL: response.result.variants[0],
 									imageName: response.result.filename,
-									imageSize: roundTo(imageFile.size / 1024 / 1024),
+									imageSize,
 								},
+							});
+
+							await prisma.user.update({
+								where: { id: session.userId },
+								data: { bandwidth: { increment: imageSize } },
 							});
 
 							if (dbImage) {
