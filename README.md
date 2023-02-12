@@ -2,6 +2,12 @@
 
 Created to help utilise Cloudflare Images in a better looking and easier way, with built in endpoints for uploading from 3rd party applications coming.
 
+## API
+
+The service exposes a endoint to use with other software like ShareX to be able to take screenshots and directly upload to your account. Generate an API key on your profile page, and use it with the url to send images to the server. 
+
+`https://images.dixxel.io/api/images/upload?key=`
+
 ## Tech Stack
 
 **Project bootstrapped with [Next.js](https://nextjs.org/)**  
@@ -15,6 +21,6 @@ Created to help utilise Cloudflare Images in a better looking and easier way, wi
 
 ## Screenshots
 
-![](https://cdn.dixxel.io/cdn-cgi/imagedelivery/3ecvmLCFkS-FijMWb0qFvQ/d3ff7060-41af-45dc-afcc-b80a30cd0600/w=1000)
-![](https://cdn.dixxel.io/cdn-cgi/imagedelivery/3ecvmLCFkS-FijMWb0qFvQ/35cf358d-f968-4eed-4078-4d14f472a000/w=1000)
-![](https://cdn.dixxel.io/cdn-cgi/imagedelivery/3ecvmLCFkS-FijMWb0qFvQ/3454ba7c-b0a3-4a4e-ae44-4941dcda2400/w=1000)
+![](https://cdn.dixxel.io/cdn-cgi/imagedelivery/3ecvmLCFkS-FijMWb0qFvQ/d3ff7060-41af-45dc-afcc-b80a30cd0600/public)
+![](https://cdn.dixxel.io/cdn-cgi/imagedelivery/3ecvmLCFkS-FijMWb0qFvQ/35cf358d-f968-4eed-4078-4d14f472a000/public)
+![](https://cdn.dixxel.io/cdn-cgi/imagedelivery/3ecvmLCFkS-FijMWb0qFvQ/3454ba7c-b0a3-4a4e-ae44-4941dcda2400/public)
