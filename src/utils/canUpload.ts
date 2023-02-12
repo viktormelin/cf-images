@@ -8,9 +8,16 @@ interface groups {
 	[key: string]: group;
 }
 
-const groups: groups = {
+export const groups: groups = {
 	base: { maxSize: 100, maxImages: 50 },
 	premium: { maxSize: 1000, maxImages: 250 },
+};
+
+export const getRemaining = (user: User & { images: Images[] }) => {
+	const remainingSize = user.bandwidth / groups[user.group].maxSize;
+	const remainingImages = user.images.length / groups[user.group].maxImages;
+
+	return { remainingSize, remainingImages };
 };
 
 const canUpload = (
