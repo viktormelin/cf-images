@@ -24,7 +24,7 @@ const Header: React.FC<{ setIsOpen: (state: boolean) => void }> = ({ setIsOpen }
 							color: theme.colors.blue[5],
 							cursor: 'pointer',
 						})}
-						onClick={() => signIn('discord', { callbackUrl: 'http://localhost:3000/images' })}
+						onClick={() => signIn('discord')}
 					>
 						Continue with Discord
 					</Text>{' '}
