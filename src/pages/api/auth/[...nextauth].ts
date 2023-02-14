@@ -37,7 +37,7 @@ export default NextAuth({
 	},
 	callbacks: {
 		async signIn({ user, account }) {
-			const verifiedRoleId = '1064965680669135109';
+			const verifiedRoleId = '1034129970383028265';
 
 			if (account) {
 				const token = account.access_token;
